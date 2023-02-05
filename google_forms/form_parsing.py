@@ -69,6 +69,23 @@ def process_text_question(question: list) -> questions_module.TextAnswerQuestion
     )
 
 
+def process_checkboxes_question(question: list) -> questions_module.CheckboxesQuestion:
+    """
+    This function is used for checkboxes questions
+
+    Args:
+        question: data about question, from data params of the div atribute, list
+
+    Returns:
+        instance of CheckboxesQuestion class
+    """
+    requests_data_key = question[0][4][0][0]
+
+    answers = [answ[0] for answ in question[0][4][0][1]]
+
+    return questions_module.CheckboxesQuestion(question[0][1], question[0][0], requests_data_key, answers)
+
+
 def get_google_form(form_id: str) -> Form:
     """
     This functions gathers information about a google form with given id
@@ -124,6 +141,11 @@ def get_google_form(form_id: str) -> Form:
 
         elif (question_type == 0) or (question_type == 1):  # paragraph question / short answer question
             question_object = process_text_question(question)
+
+            question_objects.append(question_object)
+
+        elif question_type == 4:  # checkboxes question
+            question_object = process_checkboxes_question(question)
 
             question_objects.append(question_object)
 

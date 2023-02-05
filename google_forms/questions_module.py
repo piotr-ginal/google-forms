@@ -41,3 +41,23 @@ class TextAnswerQuestion(Question):
 
     def add_answer(self, answer: str, data: dict) -> None:
         data[f"entry.{self.request_data_key}"] = answer
+
+
+@dataclass()
+class CheckboxesQuestion(Question):
+    """
+    This class stores information about Checboxes questions
+    """
+    request_data_key: int
+    answers: list[str] = field(repr=False)
+    answer_count: int = field(repr=False, init=False)
+
+    def __post_init__(self) -> None:
+        self.answer_count = len(self.answers)
+
+    def add_answer(self, indexes: list[int], data: dict) -> None:
+        key = f"entry.{self.request_data_key}"
+
+        answers = [self.answers[index] for index in set(indexes)]
+
+        data[key] = answers
