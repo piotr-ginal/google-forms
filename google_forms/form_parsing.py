@@ -86,6 +86,24 @@ def process_checkboxes_question(question: list) -> questions_module.CheckboxesQu
     return questions_module.CheckboxesQuestion(question[0][1], question[0][0], requests_data_key, answers)
 
 
+def process_dropdown_question(question: list) -> questions_module.DropdownQuestion:
+    """
+    This function is used for processing dropdown questions
+
+    Args:
+        question: data about question, from data params of the div atribute, list
+
+    Returns:
+        instance of DropdownQuestion class
+    """
+    answers = [answ[0] for answ in question[0][4][0][1]]
+    request_data_key = question[0][4][0][0]
+
+    return questions_module.DropdownQuestion(
+        question[0][1], question[0][0], answers, request_data_key
+    )
+
+
 def get_google_form(form_id: str) -> Form:
     """
     This functions gathers information about a google form with given id
@@ -146,6 +164,11 @@ def get_google_form(form_id: str) -> Form:
 
         elif question_type == 4:  # checkboxes question
             question_object = process_checkboxes_question(question)
+
+            question_objects.append(question_object)
+
+        elif question_type == 3:  # dropdown question
+            question_object = process_dropdown_question(question)
 
             question_objects.append(question_object)
 

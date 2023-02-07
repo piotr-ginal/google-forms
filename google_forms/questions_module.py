@@ -61,3 +61,16 @@ class CheckboxesQuestion(Question):
         answers = [self.answers[index] for index in set(indexes)]
 
         data[key] = answers
+
+
+@dataclass()
+class DropdownQuestion(MultipleChoiceQuestion):
+    """
+    This class stores the needed information for multiple choice questions
+
+    Atributes:
+        answers: list of all possible answers as strings
+        request_data_key: request key needed for adding a response to the request data
+        answer_count: count of all possible answers for this question
+    """
+    pass
