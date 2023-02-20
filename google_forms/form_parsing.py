@@ -104,7 +104,7 @@ def process_dropdown_question(question: list) -> questions_module.DropdownQuesti
     )
 
 
-def get_google_form(form_id: str) -> Form:
+def get_google_form(form_id: str) -> typing.Union[Form, None]:
     """
     This functions gathers information about a google form with given id
 
