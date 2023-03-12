@@ -53,6 +53,26 @@ def _get_answer_text_question(
     question.add_answer(answer, data)
 
 
+def _get_answer_checkboxes_question(
+    question: questions_module.CheckboxesQuestion,
+    data: dict
+) -> None:
+    for index, answer in enumerate(question.answers, start=1):
+        print(f"\t- {index} - {answer}")
+
+    response, responses = 1, set()
+
+    while 1:
+        response = _get_int_in_range(range(0, question.answer_count + 1), "select response (one digit, type 0 to break) >> ")
+
+        if not response:
+            break
+
+        responses.add(response)
+
+    question.add_answer(list(responses), data)
+
+
 def get_answers(form: Form, data: dict) -> None:
     for index, question in enumerate(form.questions):
         print(f"{index} - {question.question_id} - {question.question_text}")
@@ -61,6 +81,9 @@ def get_answers(form: Form, data: dict) -> None:
 
         elif isinstance(question, questions_module.TextAnswerQuestion):
             _get_answer_text_question(question, data)
+
+        elif isinstance(question, questions_module.CheckboxesQuestion):
+            _get_answer_checkboxes_question(question, data)
 
         else:
             print("this type of question is not yet supported")

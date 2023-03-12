@@ -20,5 +20,6 @@ For now, only these types of questions are supported:
 - paragraph question
 - dropdown question
 - multiple choice question
+- checkboxes question
 
 If your form contains an unsupported question the script will stop.
