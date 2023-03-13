@@ -48,7 +48,7 @@ def process_multiple_choice_question(question: list) -> questions_module.Multipl
     request_data_key = question[0][4][0][0]
 
     return questions_module.MultipleChoiceQuestion(
-        question[0][1], question[0][0], answers, request_data_key
+        question[0][1], question[0][0], question[0][2], answers, request_data_key
     )
 
 
@@ -65,7 +65,7 @@ def process_text_question(question: list) -> questions_module.TextAnswerQuestion
     request_data_key = question[0][4][0][0]
 
     return questions_module.TextAnswerQuestion(
-        question[0][1], question[0][0], request_data_key
+        question[0][1], question[0][0], question[0][2], request_data_key
     )
 
 
@@ -83,7 +83,7 @@ def process_checkboxes_question(question: list) -> questions_module.CheckboxesQu
 
     answers = [answ[0] for answ in question[0][4][0][1]]
 
-    return questions_module.CheckboxesQuestion(question[0][1], question[0][0], requests_data_key, answers)
+    return questions_module.CheckboxesQuestion(question[0][1], question[0][0], question[0][2], requests_data_key, answers)
 
 
 def process_dropdown_question(question: list) -> questions_module.DropdownQuestion:
@@ -100,7 +100,56 @@ def process_dropdown_question(question: list) -> questions_module.DropdownQuesti
     request_data_key = question[0][4][0][0]
 
     return questions_module.DropdownQuestion(
-        question[0][1], question[0][0], answers, request_data_key
+        question[0][1], question[0][0], question[0][2], answers, request_data_key
+    )
+
+
+def process_linear_scale_question(question: list) -> questions_module.LinearScaleQuestion:
+    """
+    This function is used for processing linear scale questions
+
+    Args:
+        question: data about question, from data params of the div atribute, list
+
+    Returns:
+        instance of LinearScaleQuestion class
+    """
+    possible_answers = [element[0] for element in question[0][4][0][1]]
+    request_data_key = question[0][4][0][0]
+    labels = question[0][4][0][3]
+
+    return questions_module.LinearScaleQuestion(
+        question[0][1], question[0][0], question[0][2], request_data_key, possible_answers, labels
+    )
+
+
+def process_tick_box_grid_question(question: list) -> questions_module.GridQuestion:
+    """
+    This function is used for processing multiple choice grid questions and tick box grid questions
+
+    Args:
+        question: data about question, from data params of the div atribute, list
+
+    Returns:
+        instance of GridQuestion class
+    """
+    column_labels = [c[0] for c in question[0][4][0][1]]
+    row_labels = [row_o[3][0] for row_o in question[0][4]]
+
+    response_required = question[0][4][0][2]
+    multiple_responses_per_row = question[0][4][0][11][0]
+    one_response_per_column = bool(question[0][8])
+
+    request_data_keys = [row_o[0] for row_o in question[0][4]]
+
+    return questions_module.GridQuestion(
+        question[0][1], question[0][0], question[0][2],
+        row_labels,
+        column_labels,
+        response_required,
+        multiple_responses_per_row,
+        one_response_per_column,
+        request_data_keys
     )
 
 
@@ -150,6 +199,7 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
     question_objects: list[typing.Type[questions_module.Question]] = []
 
     for question in questions_json:
+
         question_type = question[0][3]
 
         if question_type == 2:  # Multiple choice question
@@ -169,6 +219,16 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
 
         elif question_type == 3:  # dropdown question
             question_object = process_dropdown_question(question)
+
+            question_objects.append(question_object)
+
+        elif question_type == 5:  # linear scale question
+            question_object = process_linear_scale_question(question)
+
+            question_objects.append(question_object)
+
+        elif question_type == 7:  # grid questions
+            question_object = process_tick_box_grid_question(question)
 
             question_objects.append(question_object)
 
