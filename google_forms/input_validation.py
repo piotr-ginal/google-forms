@@ -6,13 +6,13 @@ from . import questions_module
 def check_grid_question_input(question: questions_module.GridQuestion, row_index_to_answer_index: typing.Dict[int, typing.Union[int, list[int]]]) -> bool:
     """
     This function will check if the provided answer is valid for the given question. It checks:
-        - if the user provided a response for each of the rows (if the given question requres it)
+        - if the user provided a response for each of the rows (if the given question requires it)
         - if the user selected more than one answer for a given row (when its not allowed)
         - if the user selected a column more than once (when its not allowed)
 
     Args:
         question: the question you want to check your answer for
-        row_row_to_response: row index mapped to a selected column index or a list of column indexes
+        row_to_response: row index mapped to a selected column index or a list of column indexes
     """
     # if all rows need to have a value assigned check if its the case
     if question.response_required and len(row_index_to_answer_index.keys()) < len(question.rows):
