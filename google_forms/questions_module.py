@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from .import input_validation
 import typing
 
 
@@ -116,7 +117,7 @@ class GridQuestion(Question):
 
     request_data_keys: list[str]
 
-    def add_answer(self, row_index_to_answer_index: typing.Union[typing.Dict[int, int], typing.Dict[int, list[int]]], data: dict) -> None:
+    def add_answer(self, row_index_to_answer_index: typing.Dict[int, typing.Union[int, list[int]]], data: dict) -> None:
 
         for row_index, column in row_index_to_answer_index.items():
 
@@ -127,3 +128,9 @@ class GridQuestion(Question):
             selected_column_strings: list[str] = [self.columns[column_index] for column_index in set(column)]
 
             data[f"entry.{self.request_data_keys[row_index]}"] = selected_column_strings
+
+    def check_answer(self, row_index_to_answer_index: typing.Dict[int, typing.Union[int, list[int]]]) -> bool:
+        """
+        Check if the given answer is valid for this question
+        """
+        return input_validation.check_grid_question_input(self, row_index_to_answer_index)
