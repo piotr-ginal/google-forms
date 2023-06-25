@@ -1,9 +1,7 @@
 import typing
 
-from . import questions_module
 
-
-def check_grid_question_input(question: questions_module.GridQuestion, row_index_to_answer_index: typing.Dict[int, typing.Union[int, list[int]]]) -> bool:
+def check_grid_question_input(question, row_index_to_answer_index: typing.Dict[int, typing.Union[int, list[int]]]) -> bool:
     """
     This function will check if the provided answer is valid for the given question. It checks:
         - if the user provided a response for each of the rows (if the given question requires it)
@@ -12,7 +10,7 @@ def check_grid_question_input(question: questions_module.GridQuestion, row_index
 
     Args:
         question: the question you want to check your answer for
-        row_to_response: row index mapped to a selected column index or a list of column indexes
+        row_index_to_answer_index: row index mapped to a selected column index or a list of column indexes
     """
     # if all rows need to have a value assigned check if its the case
     if question.response_required and len(row_index_to_answer_index.keys()) < len(question.rows):
