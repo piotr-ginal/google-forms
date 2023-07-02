@@ -153,6 +153,54 @@ def process_tick_box_grid_question(question: list) -> questions_module.GridQuest
     )
 
 
+def process_questions(questions_json: list) -> list[typing.Type[questions_module.Question]]:
+    """
+    This function will process each questions json data and create
+    a question object for each one of them
+
+    Args:
+        questions_json: list of python objects. Each objects represents json data for one question
+    """
+
+    question_objects: list[typing.Type[questions_module.Question]] = []
+
+    for question in questions_json:
+
+        question_type = question[0][3]
+
+        if question_type == 2:  # Multiple choice question
+            question_object = process_multiple_choice_question(question)
+
+            question_objects.append(question_object)
+
+        elif (question_type == 0) or (question_type == 1):  # paragraph question / short answer question
+            question_object = process_text_question(question)
+
+            question_objects.append(question_object)
+
+        elif question_type == 4:  # checkboxes question
+            question_object = process_checkboxes_question(question)
+
+            question_objects.append(question_object)
+
+        elif question_type == 3:  # dropdown question
+            question_object = process_dropdown_question(question)
+
+            question_objects.append(question_object)
+
+        elif question_type == 5:  # linear scale question
+            question_object = process_linear_scale_question(question)
+
+            question_objects.append(question_object)
+
+        elif question_type == 7:  # grid questions
+            question_object = process_tick_box_grid_question(question)
+
+            question_objects.append(question_object)
+
+    return question_objects
+
+
 def get_google_form(form_id: str) -> typing.Union[Form, None]:
     """
     This functions gathers information about a google form with given id
@@ -196,40 +244,6 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
 
         questions_json.append(json.loads(data_params))
 
-    question_objects: list[typing.Type[questions_module.Question]] = []
-
-    for question in questions_json:
-
-        question_type = question[0][3]
-
-        if question_type == 2:  # Multiple choice question
-            question_object = process_multiple_choice_question(question)
-
-            question_objects.append(question_object)
-
-        elif (question_type == 0) or (question_type == 1):  # paragraph question / short answer question
-            question_object = process_text_question(question)
-
-            question_objects.append(question_object)
-
-        elif question_type == 4:  # checkboxes question
-            question_object = process_checkboxes_question(question)
-
-            question_objects.append(question_object)
-
-        elif question_type == 3:  # dropdown question
-            question_object = process_dropdown_question(question)
-
-            question_objects.append(question_object)
-
-        elif question_type == 5:  # linear scale question
-            question_object = process_linear_scale_question(question)
-
-            question_objects.append(question_object)
-
-        elif question_type == 7:  # grid questions
-            question_object = process_tick_box_grid_question(question)
-
-            question_objects.append(question_object)
+    question_objects: list[typing.Type[questions_module.Question]] = process_questions(questions_json)
 
     return Form(form_id, question_objects, form_name, form_description, cookies=cookies, fbzx=fbzx)
