@@ -201,6 +201,19 @@ def process_questions(questions_json: list) -> list[typing.Type[questions_module
     return question_objects
 
 
+def parse_question_json_data(webpage: BeautifulSoup) -> list[list]:
+    question_elements = webpage.select("div[jsmodel][data-params^='%.@.']")
+
+    questions_json = []
+
+    for element in question_elements:
+        data_params = element.attrs["data-params"].replace("%.@.", "[")
+
+        questions_json.append(json.loads(data_params))
+
+    return questions_json
+
+
 def get_google_form(form_id: str) -> typing.Union[Form, None]:
     """
     This functions gathers information about a google form with given id
@@ -235,14 +248,7 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
     if form_description is not None:
         form_description = form_description.attrs["content"]
 
-    question_elements = bs4_form_page.select("div[jsmodel][data-params^='%.@.']")
-
-    questions_json = []
-
-    for element in question_elements:
-        data_params = element.attrs["data-params"].replace("%.@.", "[")
-
-        questions_json.append(json.loads(data_params))
+    questions_json = parse_question_json_data(bs4_form_page)
 
     question_objects: list[typing.Type[questions_module.Question]] = process_questions(questions_json)
 
