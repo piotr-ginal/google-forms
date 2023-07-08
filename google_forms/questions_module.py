@@ -7,6 +7,7 @@ import typing
 class Question:
     question_text: str
     question_id: str
+    section_index: int
     description: typing.Union[str, None]
 
 

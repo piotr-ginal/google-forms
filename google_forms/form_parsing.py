@@ -34,7 +34,7 @@ class Form():
         self.question_count = len(self.questions)
 
 
-def process_multiple_choice_question(question: list) -> questions_module.MultipleChoiceQuestion:
+def process_multiple_choice_question(question: list, section_index: int) -> questions_module.MultipleChoiceQuestion:
     """
     This function is used for processing multiple choice questions
 
@@ -48,11 +48,11 @@ def process_multiple_choice_question(question: list) -> questions_module.Multipl
     request_data_key = question[0][4][0][0]
 
     return questions_module.MultipleChoiceQuestion(
-        question[0][1], question[0][0], question[0][2], answers, request_data_key
+        question[0][1], question[0][0], section_index, question[0][2], answers, request_data_key
     )
 
 
-def process_text_question(question: list) -> questions_module.TextAnswerQuestion:
+def process_text_question(question: list, section_index: int) -> questions_module.TextAnswerQuestion:
     """
     This function is used for text questions (paragraph or short answer)
 
@@ -65,11 +65,11 @@ def process_text_question(question: list) -> questions_module.TextAnswerQuestion
     request_data_key = question[0][4][0][0]
 
     return questions_module.TextAnswerQuestion(
-        question[0][1], question[0][0], question[0][2], request_data_key
+        question[0][1], question[0][0], section_index, question[0][2], request_data_key
     )
 
 
-def process_checkboxes_question(question: list) -> questions_module.CheckboxesQuestion:
+def process_checkboxes_question(question: list, section_index: int) -> questions_module.CheckboxesQuestion:
     """
     This function is used for checkboxes questions
 
@@ -83,10 +83,10 @@ def process_checkboxes_question(question: list) -> questions_module.CheckboxesQu
 
     answers = [answ[0] for answ in question[0][4][0][1]]
 
-    return questions_module.CheckboxesQuestion(question[0][1], question[0][0], question[0][2], requests_data_key, answers)
+    return questions_module.CheckboxesQuestion(question[0][1], question[0][0], section_index, question[0][2], requests_data_key, answers)
 
 
-def process_dropdown_question(question: list) -> questions_module.DropdownQuestion:
+def process_dropdown_question(question: list, section_index: int) -> questions_module.DropdownQuestion:
     """
     This function is used for processing dropdown questions
 
@@ -100,11 +100,11 @@ def process_dropdown_question(question: list) -> questions_module.DropdownQuesti
     request_data_key = question[0][4][0][0]
 
     return questions_module.DropdownQuestion(
-        question[0][1], question[0][0], question[0][2], answers, request_data_key
+        question[0][1], question[0][0], section_index, question[0][2], answers, request_data_key
     )
 
 
-def process_linear_scale_question(question: list) -> questions_module.LinearScaleQuestion:
+def process_linear_scale_question(question: list, section_index: int) -> questions_module.LinearScaleQuestion:
     """
     This function is used for processing linear scale questions
 
@@ -119,11 +119,11 @@ def process_linear_scale_question(question: list) -> questions_module.LinearScal
     labels = question[0][4][0][3]
 
     return questions_module.LinearScaleQuestion(
-        question[0][1], question[0][0], question[0][2], request_data_key, possible_answers, labels
+        question[0][1], question[0][0], section_index, question[0][2], request_data_key, possible_answers, labels
     )
 
 
-def process_tick_box_grid_question(question: list) -> questions_module.GridQuestion:
+def process_tick_box_grid_question(question: list, section_index: int) -> questions_module.GridQuestion:
     """
     This function is used for processing multiple choice grid questions and tick box grid questions
 
@@ -143,7 +143,7 @@ def process_tick_box_grid_question(question: list) -> questions_module.GridQuest
     request_data_keys = [row_o[0] for row_o in question[0][4]]
 
     return questions_module.GridQuestion(
-        question[0][1], question[0][0], question[0][2],
+        question[0][1], question[0][0], section_index, question[0][2],
         row_labels,
         column_labels,
         response_required,
@@ -153,7 +153,7 @@ def process_tick_box_grid_question(question: list) -> questions_module.GridQuest
     )
 
 
-def process_questions(questions_json: list) -> list[typing.Type[questions_module.Question]]:
+def process_questions(questions_json: list, section_index: int, questions_out: list[typing.Type[questions_module.Question]]) -> None:
     """
     This function will process each questions json data and create
     a question object for each one of them
@@ -162,43 +162,39 @@ def process_questions(questions_json: list) -> list[typing.Type[questions_module
         questions_json: list of python objects. Each objects represents json data for one question
     """
 
-    question_objects: list[typing.Type[questions_module.Question]] = []
-
     for question in questions_json:
 
         question_type = question[0][3]
 
         if question_type == 2:  # Multiple choice question
-            question_object = process_multiple_choice_question(question)
+            question_object = process_multiple_choice_question(question, section_index)
 
-            question_objects.append(question_object)
+            questions_out.append(question_object)
 
         elif (question_type == 0) or (question_type == 1):  # paragraph question / short answer question
-            question_object = process_text_question(question)
+            question_object = process_text_question(question, section_index)
 
-            question_objects.append(question_object)
+            questions_out.append(question_object)
 
         elif question_type == 4:  # checkboxes question
-            question_object = process_checkboxes_question(question)
+            question_object = process_checkboxes_question(question, section_index)
 
-            question_objects.append(question_object)
+            questions_out.append(question_object)
 
         elif question_type == 3:  # dropdown question
-            question_object = process_dropdown_question(question)
+            question_object = process_dropdown_question(question, section_index)
 
-            question_objects.append(question_object)
+            questions_out.append(question_object)
 
         elif question_type == 5:  # linear scale question
-            question_object = process_linear_scale_question(question)
+            question_object = process_linear_scale_question(question, section_index)
 
-            question_objects.append(question_object)
+            questions_out.append(question_object)
 
         elif question_type == 7:  # grid questions
-            question_object = process_tick_box_grid_question(question)
+            question_object = process_tick_box_grid_question(question, section_index)
 
-            question_objects.append(question_object)
-
-    return question_objects
+            questions_out.append(question_object)
 
 
 def parse_question_json_data(webpage: BeautifulSoup) -> list[list]:
@@ -212,6 +208,24 @@ def parse_question_json_data(webpage: BeautifulSoup) -> list[list]:
         questions_json.append(json.loads(data_params))
 
     return questions_json
+
+
+def is_valid_question_page(bs4_form_page: BeautifulSoup) -> bool:
+    buttons = bs4_form_page.select("div[data-shuffle-seed] div[class]:not(div:last-child) > div[role='button']")
+
+    return len(buttons) != 0
+
+
+def get_next_section(form_id: str, history: str, timeout: int = 3) -> None:
+    url = f"https://docs.google.com/forms/d/e/{form_id}/formResponse"
+
+    response = requests.post(
+        url,
+        data={"continue": "1", "pageHistory": history},
+        timeout=timeout
+    )
+
+    return response.text
 
 
 def get_google_form(form_id: str) -> typing.Union[Form, None]:
@@ -250,6 +264,26 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
 
     questions_json = parse_question_json_data(bs4_form_page)
 
-    question_objects: list[typing.Type[questions_module.Question]] = process_questions(questions_json)
+    question_objects: list[typing.Type[questions_module.Question]] = []
 
-    return Form(form_id, question_objects, form_name, form_description, cookies=cookies, fbzx=fbzx)
+    process_questions(questions_json, 0, question_objects)
+
+    history = bs4_form_page.select_one("input[name='pageHistory']").attrs["value"]
+
+    while True:
+        bs4_form_page = BeautifulSoup(get_next_section(form_id, history), "html.parser")
+
+        if not is_valid_question_page(bs4_form_page):
+            break
+
+        history = bs4_form_page.select_one("input[name='pageHistory']").attrs["value"]
+
+        section_index = int(history.split(",")[-1])
+
+        questions_json = parse_question_json_data(bs4_form_page)
+
+        process_questions(questions_json, section_index, question_objects)
+
+    return Form(
+        form_id, question_objects, form_name, form_description, history, cookies=cookies, fbzx=fbzx
+    )
