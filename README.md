@@ -1,8 +1,6 @@
 # Google forms
 This is a Python library that provides convenient and efficient interaction with Google Forms. It offers functionalities to retrieve all the questions from a Google Form and submit responses programmatically. With this package, You can seamlessly integrate Google Forms into Your applications and automate form submission processes.
 
-Please note that the current version of the library does not support forms with multiple sections.
-
 For now only these types of questions are supported:
 - multiple choice question
 - text answer questions
