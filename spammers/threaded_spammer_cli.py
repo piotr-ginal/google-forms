@@ -34,28 +34,28 @@ def _get_int_in_range(in_range: range, prompt: str = ">> ") -> int:
 
 def _get_answer_single_choice(
         question: typing.Union[questions_module.DropdownQuestion, questions_module.MultipleChoiceQuestion],
-        data: dict
+        partial: list
 ) -> None:
     for index, answer in enumerate(question.answers, start=1):
         print(f"\t- {index} - {answer}")
 
     response = _get_int_in_range(range(1, question.answer_count + 1), "select response (digit) >> ")
 
-    question.add_answer(response - 1, data)
+    question.add_answer_partial_response(response - 1, partial)
 
 
 def _get_answer_text_question(
     question: questions_module.TextAnswerQuestion,
-    data: dict
+    partial: list
 ) -> None:
     answer = input("input text answer >> ")
 
-    question.add_answer(answer, data)
+    question.add_answer_partial_response(answer, partial)
 
 
 def _get_answer_checkboxes_question(
     question: questions_module.CheckboxesQuestion,
-    data: dict
+    partial: list
 ) -> None:
     for index, answer in enumerate(question.answers, start=1):
         print(f"\t- {index} - {answer}")
@@ -68,34 +68,34 @@ def _get_answer_checkboxes_question(
         if not response:
             break
 
-        responses.add(response)
+        responses.add(response - 1)
 
-    question.add_answer(list(responses), data)
+    question.add_answer_partial_response(list(responses), partial)
 
 
-def get_answers(form: Form, data: dict) -> None:
+def get_answers(form: Form, partial: list) -> None:
     for index, question in enumerate(form.questions):
         print(f"{index} - {question.question_id} - {question.question_text}")
         if isinstance(question, (questions_module.DropdownQuestion, questions_module.MultipleChoiceQuestion)):
-            _get_answer_single_choice(question, data)
+            _get_answer_single_choice(question, partial)
 
         elif isinstance(question, questions_module.TextAnswerQuestion):
-            _get_answer_text_question(question, data)
+            _get_answer_text_question(question, partial)
 
         elif isinstance(question, questions_module.CheckboxesQuestion):
-            _get_answer_checkboxes_question(question, data)
+            _get_answer_checkboxes_question(question, partial)
 
         else:
             print("this type of question is not yet supported")
             exit()
 
 
-def post_response_retries(cookies: str, form_id: str, data: dict, fbzx: str, timeout: int = 3, retries: int = 3) -> bool:
+def post_response_retries(form: Form, partial: list, timeout: int = 3, retries: int = 3) -> bool:
     status_code = None
 
     for retry in range(retries):
         try:
-            status_code = post_response(cookies, form_id, data, fbzx, timeout)
+            status_code = post_response(form, partial, timeout=timeout)
 
         except Exception as e:
             continue
@@ -106,13 +106,13 @@ def post_response_retries(cookies: str, form_id: str, data: dict, fbzx: str, tim
     return False
 
 
-def post_form_response_threaded(form: Form, data: dict, response_count: int, timeout: int = 3, retries: int = 3, workers: int = 10) -> None:
+def post_form_response_threaded(form: Form, partial: list, response_count: int, timeout: int = 3, retries: int = 3, workers: int = 10) -> None:
     results = {}
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
 
         futures = [
-            executor.submit(post_response_retries, form.cookies, form.form_id, data, form.fbzx, timeout, retries) for _ in range(response_count)
+            executor.submit(post_response_retries, form, partial, timeout, retries) for _ in range(response_count)
         ]
 
         for future in concurrent.futures.as_completed(futures):
@@ -133,15 +133,15 @@ def main():
         print("something went wrong (check your form id, eg. 1AFEpGLSd4wrKbTMpGEPwtX3Lvk_vnWv3KuUAzjQgY9UxK6A-PQae0zw)")
         exit()
 
-    data = {}
+    partial = form.prepare_partial_response()
 
-    get_answers(form, data)
+    get_answers(form, partial)
 
     start_time = perf_counter()
 
     post_form_response_threaded(
         form,
-        data,
+        partial,
         _get_int_in_range(range(1, 2000), "how many responses? >> "),
         workers=MAX_WORKERS
     )
