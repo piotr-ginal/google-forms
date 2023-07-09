@@ -28,8 +28,10 @@ class MultipleChoiceQuestion(Question):
     def __post_init__(self) -> None:
         self.answer_count = len(self.answers)
 
-    def add_answer(self, index: int, data: dict) -> None:
-        data[f"entry.{self.request_data_key}"] = self.answers[index]
+    def add_answer_partial_response(self, answer_index: int, partial: list) -> None:
+        partial[0].append([
+            None, self.request_data_key, [self.answers[answer_index]], 0
+        ])
 
 
 @dataclass()
@@ -43,8 +45,10 @@ class TextAnswerQuestion(Question):
     """
     request_data_key: int
 
-    def add_answer(self, answer: str, data: dict) -> None:
-        data[f"entry.{self.request_data_key}"] = answer
+    def add_answer_partial_response(self, answer: str, partial: list) -> None:
+        partial[0].append([
+            None, self.request_data_key, [answer], 0
+        ])
 
 
 @dataclass()
@@ -59,12 +63,12 @@ class CheckboxesQuestion(Question):
     def __post_init__(self) -> None:
         self.answer_count = len(self.answers)
 
-    def add_answer(self, indexes: list[int], data: dict) -> None:
-        key = f"entry.{self.request_data_key}"
-
+    def add_answer_partial_response(self, indexes: list[int], partial: list) -> None:
         answers = [self.answers[index] for index in set(indexes)]
 
-        data[key] = answers
+        partial[0].append([
+            None, self.request_data_key, answers, 0
+        ])
 
 
 @dataclass()
@@ -93,8 +97,10 @@ class LinearScaleQuestion(Question):
     answers: list[str]
     labels: list[str]
 
-    def add_answer(self, index: int, data: dict) -> None:
-        data[f"entry.{self.request_data_key}"] = self.answers[index]
+    def add_answer_partial_response(self, index: int, partial: list) -> None:
+        partial[0].append([
+            None, self.request_data_key, [self.answers[index]], 0
+        ])
 
 
 @dataclass()
@@ -118,17 +124,21 @@ class GridQuestion(Question):
 
     request_data_keys: list[str]
 
-    def add_answer(self, row_index_to_answer_index: typing.Dict[int, typing.Union[int, list[int]]], data: dict) -> None:
-
+    def add_answer_partial_response(self, row_index_to_answer_index: typing.Dict[int, typing.Union[int, list[int]]], partial: list) -> None:
         for row_index, column in row_index_to_answer_index.items():
 
             if not isinstance(column, list):
-                data[f"entry.{self.request_data_keys[row_index]}"] = self.columns[column]
+
+                partial[0].append([
+                    None, self.request_data_keys[row_index], [self.columns[column]], 0
+                ])
                 continue
 
             selected_column_strings: list[str] = [self.columns[column_index] for column_index in set(column)]
 
-            data[f"entry.{self.request_data_keys[row_index]}"] = selected_column_strings
+            partial[0].append([
+                None, self.request_data_keys[row_index], selected_column_strings, 0
+            ])
 
     def check_answer(self, row_index_to_answer_index: typing.Dict[int, typing.Union[int, list[int]]]) -> bool:
         """

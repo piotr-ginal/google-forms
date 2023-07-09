@@ -1,21 +1,29 @@
 import requests
+import json
+from .form_parsing import Form
 
 
-def post_response(cookies: str, form_id: str, data: dict, fbzx: str, timeout: int = 3) -> None:
+def post_response(form: Form, partial_response: list, timeout: int = 3) -> int:
     """
-    Responds to the given form with given data, using given cookies and fbzx
+    Responds to the given form with given data
 
     Args:
-        cookies: cookies that were set when accesng the form page (as a string)
-        form_id: form id you got from the url
-        data: request data as a dictionary
-        fbzx: fbzx value you got from the form page
+        form: instance of the Form class
+        partial_response: list containing responses for every form question the user wants to answer.
+        Can be generated with prepare_partial_response Form method. The answers can be added using the
+        add_answer_partial_response method (any question object).
     """
-    url = f"https://docs.google.com/forms/d/e/{form_id}/formResponse"
-    referer = f"https://docs.google.com/forms/d/e/{form_id}/viewform?fbzx={fbzx}"
+
+    data = {
+        "partialResponse": json.dumps(partial_response),
+        "pageHistory": form.section_history
+    }
+
+    url = f"https://docs.google.com/forms/d/e/{form.form_id}/formResponse"
+    referer = f"https://docs.google.com/forms/d/e/{form.form_id}/viewform?fbzx={form.fbzx}"
 
     response = requests.post(
-        url, data=data, headers={"Cookie": cookies, "Referer": referer}, timeout=timeout
+        url, data=data, headers={"Cookie": form.cookies, "Referer": referer}, timeout=timeout
     )
 
     return response.status_code
