@@ -289,7 +289,9 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
     }
 
     while True:
-        bs4_form_page = BeautifulSoup(get_next_section(form_id, history), "html.parser")
+        next_section_html = get_next_section(form_id, history)
+
+        bs4_form_page = BeautifulSoup(next_section_html, "html.parser")
 
         if not is_valid_question_page(bs4_form_page):
             break
@@ -299,6 +301,9 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
         section_index = int(history.split(",")[-1])
 
         section_info_div = bs4_form_page.select_one("div[role='list'] > div[role='listitem']")
+
+        if not section_info_div:
+            break
 
         section_title = section_info_div.select_one("div[jsname] > div > div")
 
