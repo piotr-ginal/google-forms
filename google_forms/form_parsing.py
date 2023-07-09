@@ -10,6 +10,13 @@ from dataclasses import dataclass, field
 
 
 @dataclass()
+class Section:
+    section_title: typing.Union[str, None]
+    section_description: typing.Union[str, None]
+    section_index: int
+
+
+@dataclass()
 class Form():
     """
     This class stores information about a form (google forms)
@@ -26,12 +33,19 @@ class Form():
     questions: list[typing.Type[questions_module.Question]] = field(repr=False)
     form_name: str
     form_description: typing.Union[str, None]
+    section_history: str
+    section_index_to_section_data: typing.Dict[int, Section] = field(repr=False)
+
     question_count: int = field(init=False)
+
     cookies: str = field(default=None, repr=False)
     fbzx: str = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         self.question_count = len(self.questions)
+
+    def prepare_partial_response(self) -> list:
+        return [[], None, self.fbzx]
 
 
 def process_multiple_choice_question(question: list, section_index: int) -> questions_module.MultipleChoiceQuestion:
@@ -235,7 +249,7 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
     it scrapers all supported questions, description, title and saves cookies that were recived with the response
 
     Args:
-        form_id: id of the form you want to scraper
+        form_id: id of the form you want to scrape
 
     Returns:
         an instance of the Form class
@@ -270,6 +284,10 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
 
     history = bs4_form_page.select_one("input[name='pageHistory']").attrs["value"]
 
+    section_index_to_section_data: typing.Dict[int, Section] = {
+        0: Section(None, None, 0)
+    }
+
     while True:
         bs4_form_page = BeautifulSoup(get_next_section(form_id, history), "html.parser")
 
@@ -280,10 +298,28 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
 
         section_index = int(history.split(",")[-1])
 
+        section_info_div = bs4_form_page.select_one("div[role='list'] > div[role='listitem']")
+
+        section_title = section_info_div.select_one("div[jsname] > div > div")
+
+        section_description = section_info_div.select_one(
+            "div:last-child" if section_title is None else "div:nth-child(2)"
+        )
+
+        if section_title is not None:
+            section_title = section_title.text
+
+        if section_description is not None:
+            section_description = section_description.text
+
         questions_json = parse_question_json_data(bs4_form_page)
 
         process_questions(questions_json, section_index, question_objects)
 
+        section_index_to_section_data[section_index] = Section(
+            section_title, section_description, section_index
+        )
+
     return Form(
-        form_id, question_objects, form_name, form_description, history, cookies=cookies, fbzx=fbzx
+        form_id, question_objects, form_name, form_description, history, section_index_to_section_data, cookies=cookies, fbzx=fbzx
     )
