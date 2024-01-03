@@ -43,4 +43,4 @@ Please note that the threaded_spammer_1.py script currently supports the followi
 - multiple choice question
 - checkboxes question
 
-If your form contains an unsupported question the script will stop.
+If your form contains an unsupported question the script will stop. Please remember that if the forms creator disabled multiple answers per user the script wont work.
