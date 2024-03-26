@@ -150,7 +150,7 @@ def process_tick_box_grid_question(question: list, section_index: int) -> questi
     column_labels = [c[0] for c in question[0][4][0][1]]
     row_labels = [row_o[3][0] for row_o in question[0][4]]
 
-    response_required = question[0][4][0][2]
+    response_required = question[0][4][0][2]  # TODO add this to all parsers
     multiple_responses_per_row = question[0][4][0][11][0]
     one_response_per_column = bool(question[0][8])
 
@@ -230,19 +230,32 @@ def is_valid_question_page(bs4_form_page: BeautifulSoup) -> bool:
     return len(buttons) != 0
 
 
-def get_next_section(form_id: str, history: str, timeout: int = 3) -> None:
+def get_next_section(form_id: str, history: str, timeout: int = 3, partial_response: typing.Union[list, None] = None) -> None:
+    data = {
+        "fvv": "1",
+        "pageHistory": history,
+        "submissionTimestamp": "-1",
+        "continue": "1",
+    }
+
+    if partial_response is not None:
+        data["partialResponse"] = json.dumps(partial_response)
+
     url = f"https://docs.google.com/forms/d/e/{form_id}/formResponse"
 
     response = requests.post(
         url,
-        data={"continue": "1", "pageHistory": history},
-        timeout=timeout
+        data=data,
+        timeout=timeout,
+        headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0"
+        }
     )
 
     return response.text
 
 
-def get_google_form(form_id: str) -> typing.Union[Form, None]:
+def get_google_form_new(form_id: str) -> typing.Union[Form, None]:
     """
     This functions gathers information about a google form with given id
 
@@ -254,7 +267,12 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
     Returns:
         an instance of the Form class
     """
-    response = requests.get(f"https://docs.google.com/forms/d/e/{form_id}/viewform?usp=sf_link")
+    response = requests.get(
+        f"https://docs.google.com/forms/d/e/{form_id}/viewform",
+        headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0"
+        }
+    )
 
     cookies = response.headers["set-cookie"]
 
@@ -288,8 +306,22 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
         0: Section(None, None, 0)
     }
 
+    history_prev, section_index = None, 0
+
     while True:
-        next_section_html = get_next_section(form_id, history)
+        section_answers_partial = [[]]
+
+        for question in question_objects:
+            if question.section_index != section_index:
+                continue
+
+            question.add_random_answer_partial_response(section_answers_partial)
+
+        next_section_html = get_next_section(
+            form_id,
+            history,
+            partial_response=section_answers_partial
+        )
 
         bs4_form_page = BeautifulSoup(next_section_html, "html.parser")
 
@@ -297,6 +329,13 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
             break
 
         history = bs4_form_page.select_one("input[name='pageHistory']").attrs["value"]
+
+        if history == history_prev:
+            raise Exception(
+                "Got the same section page in two iterations, somehing went wrong"
+            )
+
+        history_prev = history
 
         section_index = int(history.split(",")[-1])
 

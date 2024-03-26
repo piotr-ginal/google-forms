@@ -1,14 +1,20 @@
 from dataclasses import dataclass, field
 from .import input_validation
 import typing
+from abc import ABC, abstractmethod
+from random import randint
 
 
 @dataclass()
-class Question:
+class Question(ABC):
     question_text: str
     question_id: str
     section_index: int
     description: typing.Union[str, None]
+
+    @abstractmethod
+    def add_random_answer_partial_response(self, partial: list) -> None:
+        pass
 
 
 @dataclass()
@@ -33,6 +39,9 @@ class MultipleChoiceQuestion(Question):
             None, self.request_data_key, [self.answers[answer_index]], 0
         ])
 
+    def add_random_answer_partial_response(self, partial: list) -> None:
+        self.add_answer_partial_response(randint(0, self.answer_count - 1), partial)
+
 
 @dataclass()
 class TextAnswerQuestion(Question):
@@ -49,6 +58,9 @@ class TextAnswerQuestion(Question):
         partial[0].append([
             None, self.request_data_key, [answer], 0
         ])
+
+    def add_random_answer_partial_response(self, partial: list) -> None:
+        self.add_answer_partial_response("lorem", partial)
 
 
 @dataclass()
@@ -69,6 +81,9 @@ class CheckboxesQuestion(Question):
         partial[0].append([
             None, self.request_data_key, answers, 0
         ])
+
+    def add_random_answer_partial_response(self, partial: list) -> None:
+        self.add_answer_partial_response([randint(1, self.answer_count - 1)], partial)
 
 
 @dataclass()
@@ -101,6 +116,9 @@ class LinearScaleQuestion(Question):
         partial[0].append([
             None, self.request_data_key, [self.answers[index]], 0
         ])
+
+    def add_random_answer_partial_response(self, partial: list) -> None:
+        self.add_answer_partial_response(randint(0, len(self.answers) - 1), partial)
 
 
 @dataclass()
@@ -145,3 +163,6 @@ class GridQuestion(Question):
         Check if the given answer is valid for this question
         """
         return input_validation.check_grid_question_input(self, row_index_to_answer_index)
+
+    def add_random_answer_partial_response(self, partial: list) -> None:
+        pass  # FIXME
