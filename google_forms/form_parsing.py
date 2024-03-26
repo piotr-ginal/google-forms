@@ -255,7 +255,7 @@ def get_next_section(form_id: str, history: str, timeout: int = 3, partial_respo
     return response.text
 
 
-def get_google_form_new(form_id: str) -> typing.Union[Form, None]:
+def get_google_form(form_id: str) -> typing.Union[Form, None]:
     """
     This functions gathers information about a google form with given id
 
