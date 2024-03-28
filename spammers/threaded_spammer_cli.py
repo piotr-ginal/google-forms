@@ -12,6 +12,7 @@ from time import perf_counter
 from google_forms import questions_module
 from google_forms.form_parsing import Form, get_google_form
 from google_forms.responding import post_response
+from sys import argv as command_line_arguments
 
 
 MAX_WORKERS = 25
@@ -73,8 +74,12 @@ def _get_answer_checkboxes_question(
     question.add_answer_partial_response(list(responses), partial)
 
 
-def get_answers(form: Form, partial: list) -> None:
+def get_answers(form: Form, partial: list, *, get_random: bool = False) -> None:
     for index, question in enumerate(form.questions):
+        if get_random:
+            question.add_random_answer_partial_response(partial)
+            continue
+
         print(f"{index} - {question.question_id} - {question.question_text}")
         if isinstance(question, (questions_module.DropdownQuestion, questions_module.MultipleChoiceQuestion)):
             _get_answer_single_choice(question, partial)
@@ -97,7 +102,7 @@ def post_response_retries(form: Form, partial: list, timeout: int = 3, retries: 
         try:
             status_code = post_response(form, partial, timeout=timeout)
 
-        except Exception as e:
+        except Exception:
             continue
 
         if status_code == 200:
@@ -127,6 +132,20 @@ def post_form_response_threaded(form: Form, partial: list, response_count: int, 
 
 
 def main():
+    get_random = False
+
+    if len(command_line_arguments) == 2:
+        if command_line_arguments[1] == "--random":
+            get_random = True
+            print("--- Random mode ---")
+        else:
+            print("invalid argument: ", command_line_arguments[1])
+            return
+
+    elif len(command_line_arguments) > 2:
+        print("Too many arguments")
+        return
+
     form = get_google_form(input("form id >> "))
 
     if form is None:
@@ -135,7 +154,7 @@ def main():
 
     partial = form.prepare_partial_response()
 
-    get_answers(form, partial)
+    get_answers(form, partial, get_random=get_random)
 
     start_time = perf_counter()
 
