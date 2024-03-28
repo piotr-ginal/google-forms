@@ -22,14 +22,14 @@ $ python -m pip install -e .
 ## Spammers
 scripts that will automatically send responses to a given form
 ### threaded_spammer_1.py
-tool that enables users to send multiple responses to any Google Form with ease. This script prompts the user to provide answers for each question interactively, making it highly flexible for various data submission scenarios.
+tool that enables users to send multiple responses to any Google Form with ease. This script prompts the user to provide answers for each question interactively, making it highly flexible for various data submission scenarios. It can also generate pseudo-random responses for every supported question type - `--random` option must be used.
 
 #### Usage:
 ```console
-$ python threaded_spammer_1.py
+$ python threaded_spammer_1.py [--random]
 ```
 1. You will be asked for the ID of your form. Provide the ID when prompted.
-2. Answer each question on the form when prompted.
+2. When not using `--random`: Answer each question on the form when prompted.
 3. At the end, specify the number of replies you want to send (e.g., 500).
 
 Example:
