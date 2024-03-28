@@ -165,4 +165,10 @@ class GridQuestion(Question):
         return input_validation.check_grid_question_input(self, row_index_to_answer_index)
 
     def add_random_answer_partial_response(self, partial: list) -> None:
-        pass  # FIXME
+
+        row_to_answer: typing.Dict[int, int] = {}
+
+        for row_index in range(len(self.rows)):
+            row_to_answer[row_index] = min(row_index, len(self.columns) - 1)
+
+        self.add_answer_partial_response(row_to_answer, partial)
