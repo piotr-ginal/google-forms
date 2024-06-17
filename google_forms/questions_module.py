@@ -166,7 +166,7 @@ class GridQuestion(Question):
 
     def add_random_answer_partial_response(self, partial: list) -> None:
 
-        row_to_answer: typing.Dict[int, int] = {}
+        row_to_answer: typing.Dict[int, int | list[int]] = {}
 
         for row_index in range(len(self.rows)):
             row_to_answer[row_index] = min(row_index, len(self.columns) - 1)
