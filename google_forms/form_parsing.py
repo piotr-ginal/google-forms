@@ -351,7 +351,9 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
     ).attrs["value"]
 
     form_name = get_tag_from_css(bs4_form_page, "meta[itemprop='name']").attrs["content"]
-    form_description = bs4_form_page.select_one("meta[itemprop='description']") # TODO handle empty description
+    form_description = bs4_form_page.select_one("meta[itemprop='description']")
+
+    form_description_string: str | None = None
 
     if form_description is not None:
         form_description_string = form_description.attrs["content"]
@@ -411,6 +413,9 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
         section_description_tag = section_info_div.select_one(
             "div:last-child" if section_title is None else "div:nth-child(2)"
         )
+
+        section_description_string: str | None = None
+        section_title_string: str | None = None
 
         if section_title is not None:
             section_title_string = section_title.text
