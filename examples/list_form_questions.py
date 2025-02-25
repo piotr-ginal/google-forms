@@ -2,7 +2,7 @@
 This scripts will list all questions from given form and print out their representation
 """
 
-from google_forms.form_parsing import get_google_form
+from google_forms_toolkit.form_parsing import get_google_form
 
 
 def main():

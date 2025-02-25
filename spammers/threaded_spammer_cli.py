@@ -9,9 +9,9 @@ import concurrent.futures
 import typing
 from time import perf_counter
 
-from google_forms import questions_module
-from google_forms.form_parsing import Form, get_google_form
-from google_forms.responding import post_response
+from google_forms_toolkit import questions_module
+from google_forms_toolkit.form_parsing import Form, get_google_form
+from google_forms_toolkit.responding import post_response
 from sys import argv as command_line_arguments
 
 

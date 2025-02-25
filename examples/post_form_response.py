@@ -3,8 +3,8 @@ Send one response to a form with one multiple choice question
 """
 
 
-from google_forms.form_parsing import get_google_form
-from google_forms.responding import post_response
+from google_forms_toolkit.form_parsing import get_google_form
+from google_forms_toolkit.responding import post_response
 
 
 FORM_ID = "FORM ID"
