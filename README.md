@@ -33,7 +33,7 @@ $ python threaded_spammer_1.py [--random]
 3. At the end, specify the number of replies you want to send (e.g., 500).
 
 Example:
-![image](https://github.com/piotr-ginal/google-forms/assets/70772418/3b1c1004-98b0-4252-b822-4aab6616b697)
+![cli screenshot](.assets/threaded_spammer_interface.png)
 Result of running the script:
 ![image](https://github.com/piotr-ginal/google-forms/assets/70772418/b8fa9e30-dcc4-45f3-bb5d-3e2c997e2559)
 
