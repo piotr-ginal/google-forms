@@ -35,7 +35,7 @@ $ python threaded_spammer_1.py [--random]
 Example:
 ![cli screenshot](.assets/threaded_spammer_interface.png)
 Result of running the script:
-![image](https://github.com/piotr-ginal/google-forms/assets/70772418/b8fa9e30-dcc4-45f3-bb5d-3e2c997e2559)
+![results in google forms dashboard](.assets/google_forms_dashboard_screenshot.png)
 
 Please note that the threaded_spammer_1.py script currently supports the following types of questions:
 - text answer questions (short answer question and paragraph question)
