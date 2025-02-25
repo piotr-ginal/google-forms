@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "google_forms"
+version = "0.1.0"
+description = "Automate google forms"
+authors = [
+    {name = "Piotr Ginał"}
+]
+requires-python = ">=3.9"
+dynamic = ["dependencies", "optional-dependencies"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.dynamic]
+dependencies = { file = "requirements/base.txt" }
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D101", "D105"]
