@@ -1,16 +1,15 @@
-"""Module that can help you with scraping data from google forms."""
+# ruff: noqa: PLR0914
 
 from __future__ import annotations
 
 import json
-import typing
 from dataclasses import dataclass, field
-import bs4
 
+import bs4
 import requests
 from bs4 import BeautifulSoup
 
-from . import questions_module
+from . import question_id, questions_module
 from .exceptions import ElementNotFoundException
 
 
@@ -23,6 +22,7 @@ class Section:
 
 @dataclass()
 class Form:
+
     """Information about a form (google forms).
 
     Atributes:
@@ -55,16 +55,16 @@ class Form:
 
 
 def process_multiple_choice_question(
-    question: list, section_index: int
+    question: list, section_index: int,
 ) -> questions_module.MultipleChoiceQuestion:
-    """
-    This function is used for processing multiple choice questions
+    """This function is used for processing multiple choice questions.
 
     Args:
         question: data about question, from data params of the div atribute, list
 
     Returns:
         instance of MultipleChoiceQuestion class
+
     """
     answers = [answ[0] for answ in question[0][4][0][1]]
     request_data_key = question[0][4][0][0]
@@ -80,35 +80,35 @@ def process_multiple_choice_question(
 
 
 def process_text_question(
-    question: list, section_index: int
+    question: list, section_index: int,
 ) -> questions_module.TextAnswerQuestion:
-    """
-    This function is used for text questions (paragraph or short answer)
+    """This function is used for text questions (paragraph or short answer).
 
     Args:
         question: data about question, from data params of the div atribute, list
 
     Returns:
         instance of TextAnswerQuestion class
+
     """
     request_data_key = question[0][4][0][0]
 
     return questions_module.TextAnswerQuestion(
-        question[0][1], question[0][0], section_index, question[0][2], request_data_key
+        question[0][1], question[0][0], section_index, question[0][2], request_data_key,
     )
 
 
 def process_checkboxes_question(
-    question: list, section_index: int
+    question: list, section_index: int,
 ) -> questions_module.CheckboxesQuestion:
-    """
-    This function is used for checkboxes questions
+    """This function is used for checkboxes questions.
 
     Args:
         question: data about question, from data params of the div atribute, list
 
     Returns:
         instance of CheckboxesQuestion class
+
     """
     requests_data_key = question[0][4][0][0]
 
@@ -125,16 +125,16 @@ def process_checkboxes_question(
 
 
 def process_dropdown_question(
-    question: list, section_index: int
+    question: list, section_index: int,
 ) -> questions_module.DropdownQuestion:
-    """
-    This function is used for processing dropdown questions
+    """This function is used for processing dropdown questions.
 
     Args:
         question: data about question, from data params of the div atribute, list
 
     Returns:
         instance of DropdownQuestion class
+
     """
     answers = [answ[0] for answ in question[0][4][0][1]]
     request_data_key = question[0][4][0][0]
@@ -150,16 +150,16 @@ def process_dropdown_question(
 
 
 def process_linear_scale_question(
-    question: list, section_index: int
+    question: list, section_index: int,
 ) -> questions_module.LinearScaleQuestion:
-    """
-    This function is used for processing linear scale questions
+    """This function is used for processing linear scale questions.
 
     Args:
         question: data about question, from data params of the div atribute, list
 
     Returns:
         instance of LinearScaleQuestion class
+
     """
     possible_answers = [element[0] for element in question[0][4][0][1]]
     request_data_key = question[0][4][0][0]
@@ -177,21 +177,21 @@ def process_linear_scale_question(
 
 
 def process_tick_box_grid_question(
-    question: list, section_index: int
+    question: list, section_index: int,
 ) -> questions_module.GridQuestion:
-    """
-    This function is used for processing multiple choice grid questions and tick box grid questions
+    """This function is used for processing multiple choice grid questions and tick box grid questions.
 
     Args:
         question: data about question, from data params of the div atribute, list
 
     Returns:
         instance of GridQuestion class
+
     """
     column_labels = [c[0] for c in question[0][4][0][1]]
     row_labels = [row_o[3][0] for row_o in question[0][4]]
 
-    response_required = question[0][4][0][2]  # TODO add this to all parsers
+    response_required = question[0][4][0][2]
     multiple_responses_per_row = question[0][4][0][11][0]
     one_response_per_column = bool(question[0][8])
 
@@ -214,49 +214,45 @@ def process_tick_box_grid_question(
 def process_questions(
     questions_json: list,
     section_index: int,
-    questions_out: typing.List[questions_module.Question],
+    questions_out: list[questions_module.Question],
 ) -> None:
-    """
-    This function will process each questions json data and create
-    a question object for each one of them
+    """Process each questions json data and create a question object for each one of them.
 
     Args:
         questions_json: list of python objects. Each objects represents json data for one question
-    """
 
+    """
     question_object: questions_module.Question
 
     for question in questions_json:
         question_type = question[0][3]
 
-        if question_type == 2:  # Multiple choice question
+        if question_type == question_id.MULTIPLE_CHOICE_QUESTION:
             question_object = process_multiple_choice_question(question, section_index)
 
             questions_out.append(question_object)
 
-        elif (question_type == 0) or (
-            question_type == 1
-        ):  # paragraph question / short answer question
+        elif question_type in {question_id.PARAGRAPH_QUESTION, question_id.SHORT_ANSWER_QUESTION}:
             question_object = process_text_question(question, section_index)
 
             questions_out.append(question_object)
 
-        elif question_type == 4:  # checkboxes question
+        elif question_type == question_id.CHECKBOXES_QUESTION:
             question_object = process_checkboxes_question(question, section_index)
 
             questions_out.append(question_object)
 
-        elif question_type == 3:  # dropdown question
+        elif question_type == question_id.DROP_DOWN_QUESTION:
             question_object = process_dropdown_question(question, section_index)
 
             questions_out.append(question_object)
 
-        elif question_type == 5:  # linear scale question
+        elif question_type == question_id.LINEAR_SCALE_QUESTION:
             question_object = process_linear_scale_question(question, section_index)
 
             questions_out.append(question_object)
 
-        elif question_type == 7:  # grid questions
+        elif question_type == question_id.TICK_BOX_GRID_QUESTION:
             question_object = process_tick_box_grid_question(question, section_index)
 
             questions_out.append(question_object)
@@ -277,7 +273,7 @@ def parse_question_json_data(webpage: BeautifulSoup) -> list[list]:
 
 def is_valid_question_page(bs4_form_page: BeautifulSoup) -> bool:
     buttons = bs4_form_page.select(
-        "div[data-shuffle-seed] div[class]:not(div:last-child) > div[role='button']"
+        "div[data-shuffle-seed] div[class]:not(div:last-child) > div[role='button']",
     )
 
     return len(buttons) != 0
@@ -287,7 +283,8 @@ def get_tag_from_css(bs4_form_page: BeautifulSoup, css_selector: str) -> bs4.ele
     tag = bs4_form_page.select_one(css_selector)
 
     if tag is None:
-        raise ElementNotFoundException("The fbzx input tag was not found.")
+        msg = "The fbzx input tag was not found."
+        raise ElementNotFoundException(msg)
 
     return tag
 
@@ -296,7 +293,7 @@ def get_next_section(
     form_id: str,
     history: str,
     timeout: int = 3,
-    partial_response: typing.Union[list, None] = None,
+    partial_response: list | None = None,
 ) -> str:
     data = {
         "fvv": "1",
@@ -315,16 +312,15 @@ def get_next_section(
         data=data,
         timeout=timeout,
         headers={
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0",
         },
     )
 
     return response.text
 
 
-def get_google_form(form_id: str) -> typing.Union[Form, None]:
-    """
-    This functions gathers information about a google form with given id
+def get_google_form(form_id: str) -> Form | None:
+    """This functions gathers information about a google form with given id.
 
     it scrapers all supported questions, description, title and saves cookies that were recived with the response
 
@@ -333,12 +329,14 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
 
     Returns:
         an instance of the Form class
+
     """
     response = requests.get(
         f"https://docs.google.com/forms/d/e/{form_id}/viewform",
         headers={
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0",
         },
+        timeout=10,
     )
 
     cookies = response.headers["set-cookie"]
@@ -347,7 +345,7 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
 
     fbzx = get_tag_from_css(
         bs4_form_page,
-        "input[type='hidden'][name='fbzx']"
+        "input[type='hidden'][name='fbzx']",
     ).attrs["value"]
 
     form_name = get_tag_from_css(bs4_form_page, "meta[itemprop='name']").attrs["content"]
@@ -366,8 +364,8 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
 
     history = get_tag_from_css(bs4_form_page, "input[name='pageHistory']").attrs["value"]
 
-    section_index_to_section_data: typing.Dict[int, Section] = {
-        0: Section(None, None, 0)
+    section_index_to_section_data: dict[int, Section] = {
+        0: Section(None, None, 0),
     }
 
     history_prev, section_index = None, 0
@@ -382,7 +380,7 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
             question.add_random_answer_partial_response(section_answers_partial)
 
         next_section_html = get_next_section(
-            form_id, history, partial_response=section_answers_partial
+            form_id, history, partial_response=section_answers_partial,
         )
 
         bs4_form_page = BeautifulSoup(next_section_html, "html.parser")
@@ -393,8 +391,9 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
         history = get_tag_from_css(bs4_form_page, "input[name='pageHistory']").attrs["value"]
 
         if history == history_prev:
-            raise Exception(  # FIXME
-                "Got the same section page in two iterations, somehing went wrong"
+            msg = "Got the same section page in two iterations, somehing went wrong"
+            raise Exception(  # noqa: DOC501, TRY002
+                msg,
             )
 
         history_prev = history
@@ -402,7 +401,7 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
         section_index = int(history.split(",")[-1])
 
         section_info_div = bs4_form_page.select_one(
-            "div[role='list'] > div[role='listitem']"
+            "div[role='list'] > div[role='listitem']",
         )
 
         if not section_info_div:
@@ -411,7 +410,7 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
         section_title = section_info_div.select_one("div[jsname] > div > div")
 
         section_description_tag = section_info_div.select_one(
-            "div:last-child" if section_title is None else "div:nth-child(2)"
+            "div:last-child" if section_title is None else "div:nth-child(2)",
         )
 
         section_description_string: str | None = None
@@ -428,7 +427,7 @@ def get_google_form(form_id: str) -> typing.Union[Form, None]:
         process_questions(questions_json, section_index, question_objects)
 
         section_index_to_section_data[section_index] = Section(
-            section_title_string, section_description_string, section_index
+            section_title_string, section_description_string, section_index,
         )
 
     return Form(

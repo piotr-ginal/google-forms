@@ -22,6 +22,27 @@ include-package-data = true
 [tool.setuptools.dynamic]
 dependencies = { file = "requirements/base.txt" }
 
-[tool.ruff.lint]
-select = ["ALL"]
-ignore = ["D101", "D105"]
+[tool.ruff]
+lint.select = ["ALL", "E302"]
+line-length=120
+lint.ignore = [
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D107",
+    "D401",
+    "D404",
+    "D417",
+    "N818",
+    "D213",  # ignore rules causing conflicts
+    "D211",
+    "S311",
+    "FIX002",
+    "TD003",
+    "CPY001",
+    "FA100",
+]
+preview = true
