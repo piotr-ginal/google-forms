@@ -264,7 +264,7 @@ def parse_question_json_data(webpage: BeautifulSoup) -> list[list]:
     questions_json = []
 
     for element in question_elements:
-        data_params = element.attrs["data-params"].replace("%.@.", "[")
+        data_params = str(element.attrs["data-params"]).replace("%.@.", "[")
 
         questions_json.append(json.loads(data_params))
 
@@ -354,7 +354,7 @@ def get_google_form(form_id: str) -> Form | None:
     form_description_string: str | None = None
 
     if form_description is not None:
-        form_description_string = form_description.attrs["content"]
+        form_description_string = form_description.attrs["content"]  # type: ignore[assignment]
 
     questions_json = parse_question_json_data(bs4_form_page)
 
@@ -380,7 +380,7 @@ def get_google_form(form_id: str) -> Form | None:
             question.add_random_answer_partial_response(section_answers_partial)
 
         next_section_html = get_next_section(
-            form_id, history, partial_response=section_answers_partial,
+            form_id, history, partial_response=section_answers_partial,  # type: ignore[arg-type]
         )
 
         bs4_form_page = BeautifulSoup(next_section_html, "html.parser")
@@ -398,7 +398,7 @@ def get_google_form(form_id: str) -> Form | None:
 
         history_prev = history
 
-        section_index = int(history.split(",")[-1])
+        section_index = int(history.split(",")[-1])  # type: ignore[union-attr]
 
         section_info_div = bs4_form_page.select_one(
             "div[role='list'] > div[role='listitem']",
@@ -433,10 +433,10 @@ def get_google_form(form_id: str) -> Form | None:
     return Form(
         form_id,
         question_objects,
-        form_name,
+        form_name,  # type: ignore[arg-type]
         form_description_string,
-        history,
+        history,  # type: ignore[arg-type]
         section_index_to_section_data,
         cookies=cookies,
-        fbzx=fbzx,
+        fbzx=fbzx,  # type: ignore[arg-type]
     )
